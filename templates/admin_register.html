@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration - Attendance Impulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <!-- Background Elements -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full floating-animation"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full floating-animation" style="animation-delay: -3s;"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white opacity-5 rounded-full floating-animation" style="animation-delay: -1.5s;"></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-lg">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-4">
+                <i class="fas fa-user-plus text-3xl text-white"></i>
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-2">Admin Registration</h1>
+            <p class="text-white text-opacity-80">Create your admin account</p>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="glass-effect rounded-2xl p-8 shadow-2xl">
+            <form method="POST" class="space-y-6">
+                <!-- Name Field -->
+                <div>
+                    <label class="block text-sm font-medium text-white mb-2">
+                        <i class="fas fa-user mr-2"></i>Full Name
+                    </label>
+                    <input type="text" name="name" required
+                           class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-300"
+                           placeholder="Enter your full name">
+                </div>
+
+                <!-- Email Field -->
+                <div>
+                    <label class="block text-sm font-medium text-white mb-2">
+                        <i class="fas fa-envelope mr-2"></i>Email Address
+                    </label>
+                    <input type="email" name="email" required
+                           class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-300"
+                           placeholder="Enter your email address">
+                </div>
+
+                <!-- Admin ID Field -->
+                <div>
+                    <label class="block text-sm font-medium text-white mb-2">
+                        <i class="fas fa-id-card mr-2"></i>Admin ID
+                    </label>
+                    <input type="text" name="admin_id" required
+                           class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-300"
+                           placeholder="Enter your admin ID">
+                </div>
+
+                <!-- Keyword Field -->
+                <div>
+                    <label class="block text-sm font-medium text-white mb-2">
+                        <i class="fas fa-key mr-2"></i>Admin Keyword
+                    </label>
+                    <input type="text" name="keyword" required
+                           class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-300"
+                           placeholder="Enter admin keyword">
+                    <p class="text-white text-opacity-60 text-xs mt-1">Contact system administrator for the keyword</p>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label class="block text-sm font-medium text-white mb-2">
+                        <i class="fas fa-lock mr-2"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" name="password" required id="password"
+                               class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-300 pr-12"
+                               placeholder="Enter your password">
+                        <button type="button" onclick="togglePassword()" 
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-opacity-70 hover:text-opacity-100 transition-colors duration-200">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div>
+                    <label class="block text-sm font-medium text-white mb-2">
+                        <i class="fas fa-lock mr-2"></i>Confirm Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" name="confirm_password" required id="confirm_password"
+                               class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent transition-all duration-300 pr-12"
+                               placeholder="Confirm your password">
+                        <button type="button" onclick="toggleConfirmPassword()" 
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white text-opacity-70 hover:text-opacity-100 transition-colors duration-200">
+                            <i class="fas fa-eye" id="toggleConfirmIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="flex items-start">
+                    <input type="checkbox" name="terms" required class="mt-1 mr-3 rounded">
+                    <label class="text-white text-opacity-80 text-sm">
+                        I agree to the <a href="#" class="text-white hover:text-opacity-100 underline">Terms and Conditions</a> and <a href="#" class="text-white hover:text-opacity-100 underline">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <!-- Register Button -->
+                <button type="submit" 
+                        class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg border border-white border-opacity-30">
+                    <i class="fas fa-user-plus mr-2"></i>Create Admin Account
+                </button>
+            </form>
+
+            <!-- Login Link -->
+            <div class="mt-6 text-center">
+                <p class="text-white text-opacity-80">
+                    Already have an admin account?
+                    <a href="{{ url_for('admin.login') }}" class="text-white hover:text-opacity-100 font-semibold transition-colors duration-200">
+                        Login here
+                    </a>
+                </p>
+            </div>
+
+            <!-- Back to Employee Login -->
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('employee.employee_login') }}" class="text-white text-opacity-60 hover:text-opacity-100 text-sm transition-colors duration-200">
+                    <i class="fas fa-arrow-left mr-1"></i>Back to Employee Login
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8">
+            <p class="text-white text-opacity-60 text-sm">
+                © 2024 Attendance Impulse. Secure & Reliable.
+            </p>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-4 right-4 z-50 space-y-2">
+                {% for category, message in messages %}
+                    <div class="bg-white bg-opacity-90 text-gray-800 px-6 py-3 rounded-lg shadow-lg border-l-4 {% if category == 'success' %}border-green-500{% elif category == 'danger' %}border-red-500{% else %}border-blue-500{% endif %}">
+                        <div class="flex items-center">
+                            <i class="fas {% if category == 'success' %}fa-check-circle text-green-500{% elif category == 'danger' %}fa-exclamation-circle text-red-500{% else %}fa-info-circle text-blue-500{% endif %} mr-2"></i>
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        function toggleConfirmPassword() {
+            const passwordField = document.getElementById('confirm_password');
+            const toggleIcon = document.getElementById('toggleConfirmIcon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Password confirmation validation
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (password !== confirmPassword) {
+                this.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+            } else {
+                this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            }
+        });
+
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.fixed.top-4.right-4 > div');
+            messages.forEach(msg => {
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateX(100%)';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

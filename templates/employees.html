@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block title %}Employees{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Employees</h1>
+
+<!-- Add Employee Form -->
+<form action="{{ url_for('admin.add_employee') }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded shadow mb-6 space-y-2">
+    <h2 class="font-bold text-lg">Add Employee</h2>
+    <div>
+        <input type="text" name="name" placeholder="Name" required class="border p-2 rounded w-full">
+    </div>
+    <div>
+        <input type="text" name="employee_id" placeholder="Employee Code" required class="border p-2 rounded w-full">
+    </div>
+    <div>
+        <input type="email" name="email" placeholder="Email" required class="border p-2 rounded w-full">
+    </div>
+    <div>
+        <input type="password" name="password" placeholder="Password" required class="border p-2 rounded w-full">
+    </div>
+    <div>
+        <input type="text" name="contact_no" placeholder="Contact Number" class="border p-2 rounded w-full">
+    </div>
+    <div>
+        <select name="branch_id" class="border p-2 rounded w-full">
+            <option value="">Select Branch</option>
+            {% for branch in branches %}
+                <option value="{{ branch.id }}">{{ branch.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <input type="file" name="photo" accept="image/*" class="border p-2 rounded w-full">
+    </div>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Employee</button>
+</form>
+
+<!-- Employee Table -->
+<div class="bg-white rounded shadow p-4">
+    <table class="w-full border-collapse">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="border px-4 py-2">Name</th>
+                <th class="border px-4 py-2">Employee Code</th>
+                <th class="border px-4 py-2">Email</th>
+                <th class="border px-4 py-2">Contact</th>
+                <th class="border px-4 py-2">Branch</th>
+                <th class="border px-4 py-2">Photo</th>
+                <th class="border px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employees %}
+            <tr>
+                <td class="border px-4 py-2">{{ emp.name }}</td>
+                <td class="border px-4 py-2">{{ emp.employee_id }}</td>
+                <td class="border px-4 py-2">{{ emp.email }}</td>
+                <td class="border px-4 py-2">{{ emp.contact_no }}</td>
+                <td class="border px-4 py-2">{{ emp.branch.name if emp.branch else 'N/A' }}</td>
+                <td class="border px-4 py-2">
+                    {% if emp.photo %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ emp.photo) }}" width="50">
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td class="border px-4 py-2 space-x-2">
+                    <form action="{{ url_for('admin.edit_employee', employee_id=emp.id) }}" method="POST" enctype="multipart/form-data" class="inline-block">
+                        <button type="submit" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Edit</button>
+                    </form>
+                    <form action="{{ url_for('admin.delete_employee', id=emp.id) }}" method="POST" class="inline-block">
+                        <button type="submit" class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

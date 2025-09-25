@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block title %}Sites - {{ branch.name }}{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Sites for Branch: {{ branch.name }}</h1>
+
+<!-- Add Site Form -->
+<form action="{{ url_for('admin.add_site', branch_id=branch.id) }}" method="POST" class="bg-white p-6 rounded shadow mb-6 space-y-2">
+    <input type="text" name="name" placeholder="Site Name" required class="border p-2 rounded w-full">
+    <input type="text" name="address" placeholder="Address" required class="border p-2 rounded w-full">
+    <input type="text" name="latitude" placeholder="Latitude" required class="border p-2 rounded w-full">
+    <input type="text" name="longitude" placeholder="Longitude" required class="border p-2 rounded w-full">
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Site</button>
+</form>
+
+<!-- Sites Table -->
+<div class="bg-white rounded shadow p-4">
+    <table class="w-full border-collapse">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="border px-4 py-2">Site Name</th>
+                <th class="border px-4 py-2">Address</th>
+                <th class="border px-4 py-2">Latitude</th>
+                <th class="border px-4 py-2">Longitude</th>
+                <th class="border px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for site in branch.sites %}
+            <tr>
+                <td class="border px-4 py-2">{{ site.name }}</td>
+                <td class="border px-4 py-2">{{ site.address }}</td>
+                <td class="border px-4 py-2">{{ site.latitude }}</td>
+                <td class="border px-4 py-2">{{ site.longitude }}</td>
+                <td class="border px-4 py-2 space-x-2">
+                    <form action="{{ url_for('admin.edit_site', id=site.id) }}" method="POST" class="inline-block">
+                        <input type="hidden" name="name" value="{{ site.name }}">
+                        <input type="hidden" name="address" value="{{ site.address }}">
+                        <input type="hidden" name="latitude" value="{{ site.latitude }}">
+                        <input type="hidden" name="longitude" value="{{ site.longitude }}">
+                        <button type="submit" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Edit</button>
+                    </form>
+                    <form action="{{ url_for('admin.delete_site', id=site.id) }}" method="POST" class="inline-block">
+                        <button type="submit" class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - Attendance Impulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .status-indicator {
+            position: relative;
+            overflow: hidden;
+        }
+        .status-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .status-indicator:hover::before {
+            left: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-2xl text-indigo-600 mr-3"></i>
+                            <h1 class="text-xl font-bold text-gray-900">Attendance Impulse</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ employee.name }}
+                    </div>
+                    <a href="{{ url_for('employee.logout') }}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Profile Section -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-xl p-6 card-hover">
+                    <div class="text-center">
+                        <div class="relative inline-block">
+                            {% if employee.photo %}
+                                <img src="{{ url_for('static', filename='uploads/' ~ employee.photo) }}" 
+                                     alt="Employee Photo"
+                                     class="w-32 h-32 rounded-full border-4 border-indigo-200 object-cover shadow-lg">
+                            {% else %}
+                                <div class="w-32 h-32 rounded-full border-4 border-gray-200 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 shadow-lg">
+                                    <i class="fas fa-user text-4xl text-indigo-400"></i>
+                                </div>
+                            {% endif %}
+                            <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-2xl font-bold text-gray-800 mt-4">{{ employee.name }}</h3>
+                        <p class="text-indigo-600 font-medium">ID: {{ employee.employee_id }}</p>
+                        <p class="text-gray-500 text-sm mt-1">{{ employee.email }}</p>
+                        <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                            <i class="fas fa-building mr-1"></i>
+                            {{ branch_name }}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <a href="{{ url_for('employee.employee_profile') }}" 
+                           class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-xl block text-center hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Status Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-xl p-6 card-hover">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            <i class="fas fa-calendar-day mr-2 text-indigo-600"></i>
+                            Today's Attendance
+                        </h2>
+                        <div class="text-sm text-gray-500">
+                            Today
+                        </div>
+                    </div>
+                    
+                    {% if attendance %}
+                        <!-- Status Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <!-- In Time Card -->
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200 status-indicator">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-medium text-green-700 mb-1">Check In</h3>
+                                        <p class="text-2xl font-bold text-green-600">
+                                            {% if attendance.in_time %}
+                                                {{ format_time(attendance.in_time) }}
+                                            {% else %}
+                                                Not Marked
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-sign-in-alt text-green-600 text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Out Time Card -->
+                            <div class="bg-gradient-to-br from-red-50 to-rose-50 p-6 rounded-xl border border-red-200 status-indicator">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-medium text-red-700 mb-1">Check Out</h3>
+                                        <p class="text-2xl font-bold text-red-600">
+                                            {% if attendance.out_time %}
+                                                {{ format_time(attendance.out_time) }}
+                                            {% else %}
+                                                Not Marked
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-sign-out-alt text-red-600 text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Working Hours & Status -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-xl border border-blue-200 status-indicator">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-medium text-blue-700 mb-1">Working Hours</h3>
+                                        <p class="text-2xl font-bold text-blue-600">
+                                            {{ attendance.working_hours or '0:00' }}
+                                        </p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-clock text-blue-600 text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br 
+                                {% if attendance.status == 'Full Day' %}from-green-50 to-emerald-50 border-green-200
+                                {% elif attendance.status == 'Half Day' %}from-yellow-50 to-amber-50 border-yellow-200
+                                {% else %}from-red-50 to-rose-50 border-red-200{% endif %} p-6 rounded-xl border status-indicator">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-medium 
+                                            {% if attendance.status == 'Full Day' %}text-green-700
+                                            {% elif attendance.status == 'Half Day' %}text-yellow-700
+                                            {% else %}text-red-700{% endif %} mb-1">Status</h3>
+                                        <p class="text-2xl font-bold 
+                                            {% if attendance.status == 'Full Day' %}text-green-600
+                                            {% elif attendance.status == 'Half Day' %}text-yellow-600
+                                            {% else %}text-red-600{% endif %}">
+                                            {{ attendance.status }}
+                                        </p>
+                                    </div>
+                                    <div class="w-12 h-12 
+                                        {% if attendance.status == 'Full Day' %}bg-green-100
+                                        {% elif attendance.status == 'Half Day' %}bg-yellow-100
+                                        {% else %}bg-red-100{% endif %} rounded-full flex items-center justify-center">
+                                        <i class="fas 
+                                            {% if attendance.status == 'Full Day' %}fa-check-circle text-green-600
+                                            {% elif attendance.status == 'Half Day' %}fa-exclamation-triangle text-yellow-600
+                                            {% else %}fa-times-circle text-red-600{% endif %} text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if attendance.pending_approval %}
+                            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 p-4 rounded-xl mb-6">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                                        <i class="fas fa-hourglass-half text-yellow-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-yellow-800">Pending Approval</h3>
+                                        <p class="text-yellow-700 text-sm">
+                                            Your {{ attendance.pending_type }} attendance is pending admin approval.
+                                            <br>Location: {{ attendance.pending_address[:50] }}...
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="bg-gradient-to-br from-gray-50 to-slate-50 p-8 rounded-xl border border-gray-200 text-center">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-calendar-times text-gray-400 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-600 mb-2">No Attendance Today</h3>
+                            <p class="text-gray-500">Mark your attendance using the forms below</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Mark Attendance Section -->
+                    <div class="border-t border-gray-200 pt-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">
+                            <i class="fas fa-camera mr-2 text-indigo-600"></i>
+                            Mark Attendance
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- In Attendance Form -->
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-200">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-sign-in-alt text-green-600"></i>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-green-800">Check In</h4>
+                                </div>
+                                
+                                <form action="{{ url_for('employee.attendance_in') }}" method="post" enctype="multipart/form-data">
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-green-700 mb-2">
+                                            <i class="fas fa-camera mr-1"></i>Upload GPS Photo
+                                        </label>
+                                        <div class="relative">
+                                            <input type="file" name="photo" accept="image/*" required 
+                                                   class="w-full p-3 border-2 border-green-200 rounded-xl focus:border-green-400 focus:outline-none transition-colors duration-200">
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <div class="bg-blue-100 border border-blue-300 p-4 rounded-xl mb-4">
+                                        <p class="text-sm text-blue-800 font-medium mb-2">
+                                            <i class="fas fa-info-circle mr-1"></i>Instructions:
+                                        </p>
+                                        <ul class="text-xs text-blue-700 space-y-1">
+                                            <li>• Take GPS photo with location services enabled</li>
+                                            <li>• System will extract GPS coordinates automatically</li>
+                                            <li>• Face recognition will verify your identity</li>
+                                            <li>• Photo must be taken today with visible date/time</li>
+                                        </ul>
+                                    </div>
+
+                                    <button type="submit" 
+                                            class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 shadow-lg
+                                                   {% if attendance and attendance.in_time %}opacity-50 cursor-not-allowed{% endif %}"
+                                            {% if attendance and attendance.in_time %}disabled{% endif %}>
+                                        {% if attendance and attendance.in_time %}
+                                            <i class="fas fa-check mr-2"></i>
+                                            IN Already Marked ({{ format_time(attendance.in_time) }})
+                                        {% else %}
+                                            <i class="fas fa-sign-in-alt mr-2"></i>
+                                            Mark IN Attendance
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Out Attendance Form -->
+                            <div class="bg-gradient-to-br from-red-50 to-rose-50 p-6 rounded-2xl border border-red-200">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-sign-out-alt text-red-600"></i>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-red-800">Check Out</h4>
+                                </div>
+                                
+                                <form action="{{ url_for('employee.attendance_out') }}" method="post" enctype="multipart/form-data">
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-red-700 mb-2">
+                                            <i class="fas fa-camera mr-1"></i>Upload GPS Photo
+                                        </label>
+                                        <div class="relative">
+                                            <input type="file" name="photo" accept="image/*" required 
+                                                   class="w-full p-3 border-2 border-red-200 rounded-xl focus:border-red-400 focus:outline-none transition-colors duration-200">
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <div class="bg-blue-100 border border-blue-300 p-4 rounded-xl mb-4">
+                                        <p class="text-sm text-blue-800 font-medium mb-2">
+                                            <i class="fas fa-info-circle mr-1"></i>Instructions:
+                                        </p>
+                                        <ul class="text-xs text-blue-700 space-y-1">
+                                            <li>• Take GPS photo with location services enabled</li>
+                                            <li>• System will extract GPS coordinates automatically</li>
+                                            <li>• Face recognition will verify your identity</li>
+                                            <li>• Photo must be taken today with visible date/time</li>
+                                        </ul>
+                                    </div>
+
+                                    <button type="submit" 
+                                            class="w-full bg-gradient-to-r from-red-600 to-rose-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-red-700 hover:to-rose-700 transition-all duration-300 transform hover:scale-105 shadow-lg
+                                                   {% if attendance and attendance.out_time %}opacity-50 cursor-not-allowed{% endif %}"
+                                            {% if attendance and attendance.out_time %}disabled{% endif %}>
+                                        {% if attendance and attendance.out_time %}
+                                            <i class="fas fa-check mr-2"></i>
+                                            OUT Already Marked ({{ format_time(attendance.out_time) }})
+                                        {% else %}
+                                            <i class="fas fa-sign-out-alt mr-2"></i>
+                                            Mark OUT Attendance
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-4 right-4 z-50 space-y-2">
+                {% for category, message in messages %}
+                    <div class="bg-white bg-opacity-95 text-gray-800 px-6 py-4 rounded-xl shadow-lg border-l-4 {% if category == 'success' %}border-green-500{% elif category == 'danger' or category == 'error' %}border-red-500{% elif category == 'warning' %}border-yellow-500{% else %}border-blue-500{% endif %} max-w-sm">
+                        <div class="flex items-center">
+                            <i class="fas {% if category == 'success' %}fa-check-circle text-green-500{% elif category == 'danger' or category == 'error' %}fa-exclamation-circle text-red-500{% elif category == 'warning' %}fa-exclamation-triangle text-yellow-500{% else %}fa-info-circle text-blue-500{% endif %} mr-3"></i>
+                            <div>
+                                <p class="font-medium">{{ message }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- JavaScript -->
+    <script>
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.fixed.top-4.right-4 > div');
+            messages.forEach(msg => {
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateX(100%)';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+
+        // Add interactive effects to forms
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    const fileName = this.files[0]?.name;
+                    if (fileName) {
+                        const label = this.parentElement.querySelector('label');
+                        if (label) {
+                            label.innerHTML = `<i class="fas fa-camera mr-1"></i>Selected: ${fileName}`;
+                        }
+                    }
+                });
+            });
+
+            // Add loading states to buttons
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const button = this.querySelector('button[type="submit"]');
+                    if (button && !button.disabled) {
+                        const originalText = button.innerHTML;
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+                        button.disabled = true;
+                        
+                        // Re-enable after 10 seconds as fallback
+                        setTimeout(() => {
+                            button.innerHTML = originalText;
+                            button.disabled = false;
+                        }, 10000);
+                    }
+                });
+            });
+        });
+
+        // GPS location functions (if needed for manual input)
+        function setLocation(inLatId, inLongId) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    const latInput = document.querySelector(`input[name="manual_lat"]`);
+                    const lonInput = document.querySelector(`input[name="manual_lon"]`);
+                    if (latInput && lonInput) {
+                        latInput.value = pos.coords.latitude.toFixed(6);
+                        lonInput.value = pos.coords.longitude.toFixed(6);
+                    }
+                }, function(err) {
+                    console.log("Could not fetch GPS: " + err.message);
+                });
+            } else {
+                console.log("Geolocation not supported by your browser.");
+            }
+        }
+
+        // Add click handlers for GPS buttons if needed
+        document.addEventListener('DOMContentLoaded', function() {
+            const gpsButtons = document.querySelectorAll('[data-gps-trigger]');
+            gpsButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    setLocation();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

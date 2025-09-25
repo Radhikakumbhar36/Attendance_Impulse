@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Reports - Attendance Impulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .status-indicator {
+            position: relative;
+            overflow: hidden;
+        }
+        .status-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .status-indicator:hover::before {
+            left: 100%;
+        }
+        .table-row-hover:hover {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.05), rgba(147, 51, 234, 0.05));
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-bar text-2xl text-indigo-600 mr-3"></i>
+                            <h1 class="text-xl font-bold text-gray-900">Attendance Reports</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('admin.dashboard') }}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-chart-line mr-3 text-indigo-600"></i>
+                Attendance Reports
+            </h1>
+            <p class="text-gray-600 text-lg">Comprehensive attendance analytics and insights</p>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8 card-hover">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                    <i class="fas fa-filter text-indigo-600 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Filter Reports</h2>
+                    <p class="text-gray-600">Select date range to generate attendance reports</p>
+                </div>
+            </div>
+            
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt mr-1"></i>Start Date
+                    </label>
+                    <input type="date" name="start_date" value="{{ start_date.strftime('%Y-%m-%d') }}" 
+                           class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-indigo-500 focus:outline-none transition-colors duration-200">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt mr-1"></i>End Date
+                    </label>
+                    <input type="date" name="end_date" value="{{ end_date.strftime('%Y-%m-%d') }}" 
+                           class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-indigo-500 focus:outline-none transition-colors duration-200">
+                </div>
+                <div>
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-search mr-2"></i>
+                        Filter Reports
+                    </button>
+                </div>
+                <div>
+                    <a href="{{ url_for('admin.export_attendance_reports', start_date=start_date.strftime('%Y-%m-%d'), end_date=end_date.strftime('%Y-%m-%d')) }}" 
+                       class="w-full inline-flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Attendance Summary -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8 card-hover">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-chart-pie text-indigo-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Summary Report</h2>
+                        <p class="text-gray-600">{{ start_date.strftime('%d-%m-%Y') }} to {{ end_date.strftime('%d-%m-%Y') }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Total Employees Card -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200 status-indicator">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-blue-700 mb-1">Total Employees</p>
+                            <p class="text-3xl font-bold text-blue-900">{{ attendance_data|length }}</p>
+                            <p class="text-xs text-blue-600 mt-1">Registered users</p>
+                        </div>
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full Days Card -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-200 status-indicator">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-green-700 mb-1">Full Days</p>
+                            <p class="text-3xl font-bold text-green-900">
+                                {% set full_days = [] %}
+                                {% for data in attendance_data %}
+                                    {% for att in data.attendances %}
+                                        {% if att.status == 'Full Day' %}
+                                            {% set _ = full_days.append(1) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                {{ full_days|length }}
+                            </p>
+                            <p class="text-xs text-green-600 mt-1">Complete attendance</p>
+                        </div>
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Half Days Card -->
+                <div class="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-2xl border border-yellow-200 status-indicator">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-yellow-700 mb-1">Half Days</p>
+                            <p class="text-3xl font-bold text-yellow-900">
+                                {% set half_days = [] %}
+                                {% for data in attendance_data %}
+                                    {% for att in data.attendances %}
+                                        {% if att.status == 'Half Day' %}
+                                            {% set _ = half_days.append(1) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                {{ half_days|length }}
+                            </p>
+                            <p class="text-xs text-yellow-600 mt-1">Partial attendance</p>
+                        </div>
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Absent Days Card -->
+                <div class="bg-gradient-to-br from-red-50 to-rose-50 p-6 rounded-2xl border border-red-200 status-indicator">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-red-700 mb-1">Absent Days</p>
+                            <p class="text-3xl font-bold text-red-900">
+                                {% set absent_days = [] %}
+                                {% for data in attendance_data %}
+                                    {% for att in data.attendances %}
+                                        {% if att.status == 'Absent' %}
+                                            {% set _ = absent_days.append(1) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                {{ absent_days|length }}
+                            </p>
+                            <p class="text-xs text-red-600 mt-1">No attendance</p>
+                        </div>
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Reports -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-500 p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-table text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Detailed Attendance Report</h2>
+                        <p class="text-indigo-100">Complete attendance records for all employees</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-calendar mr-1"></i>Date
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-id-card mr-1"></i>Employee ID
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-user mr-1"></i>Name
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-building mr-1"></i>Branch
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-map-marker-alt mr-1"></i>Site
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-sign-in-alt mr-1"></i>In Time
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-sign-out-alt mr-1"></i>Out Time
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-clock mr-1"></i>Working Hours
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-info-circle mr-1"></i>Status
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <i class="fas fa-location-dot mr-1"></i>Location
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for data in attendance_data %}
+                            {% for attendance in data.attendances %}
+                            <tr class="table-row-hover transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ attendance.date.strftime('%d-%m-%Y') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        {{ data.employee.employee_id }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                    {{ data.employee.name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ data.employee.branch.name if data.employee.branch else 'No Branch' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ attendance.site.name if attendance.site else 'No Site' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if attendance.in_time %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check mr-1"></i>
+                                            {{ attendance.in_time.strftime('%I:%M %p') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <i class="fas fa-times mr-1"></i>
+                                            Not Marked
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if attendance.out_time %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check mr-1"></i>
+                                            {{ attendance.out_time.strftime('%I:%M %p') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <i class="fas fa-times mr-1"></i>
+                                            Not Marked
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        {{ attendance.working_hours or '0:00' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                                        {% if attendance.status == 'Full Day' %}bg-green-100 text-green-800
+                                        {% elif attendance.status == 'Half Day' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-red-100 text-red-800{% endif %}">
+                                        <i class="fas {% if attendance.status == 'Full Day' %}fa-check-circle{% elif attendance.status == 'Half Day' %}fa-clock{% else %}fa-times-circle{% endif %} mr-1"></i>
+                                        {{ attendance.status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if attendance.in_address %}
+                                        <div class="max-w-xs truncate" title="{{ attendance.in_address }}">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                                {{ attendance.in_address[:30] }}...
+                                            </span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-gray-400 italic">N/A</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="fixed top-4 right-4 z-50 space-y-2">
+                    {% for category, message in messages %}
+                        <div class="bg-white bg-opacity-95 text-gray-800 px-6 py-4 rounded-xl shadow-lg border-l-4 {% if category == 'success' %}border-green-500{% elif category == 'danger' or category == 'error' %}border-red-500{% elif category == 'warning' %}border-yellow-500{% else %}border-blue-500{% endif %} max-w-sm">
+                            <div class="flex items-center">
+                                <i class="fas {% if category == 'success' %}fa-check-circle text-green-500{% elif category == 'danger' or category == 'error' %}fa-exclamation-circle text-red-500{% elif category == 'warning' %}fa-exclamation-triangle text-yellow-500{% else %}fa-info-circle text-blue-500{% endif %} mr-3"></i>
+                                <div>
+                                    <p class="font-medium">{{ message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.fixed.top-4.right-4 > div');
+            messages.forEach(msg => {
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateX(100%)';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+
+        // Add interactive effects to table rows
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableRows = document.querySelectorAll('.table-row-hover');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.01)';
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

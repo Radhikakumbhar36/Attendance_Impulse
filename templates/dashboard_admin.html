@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Attendance Impulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .status-indicator {
+            position: relative;
+            overflow: hidden;
+        }
+        .status-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .status-indicator:hover::before {
+            left: 100%;
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt text-2xl text-indigo-600 mr-3"></i>
+                            <h1 class="text-xl font-bold text-gray-900">Admin Dashboard</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-user-shield mr-1"></i>
+                        {{ admin.name }}
+                    </div>
+                    <a href="{{ url_for('admin.logout') }}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                Welcome back, {{ admin.name }}!
+            </h1>
+            <p class="text-gray-600 text-lg">Manage your attendance system efficiently</p>
+        </div>
+
+        <!-- Today's Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Employees Card -->
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl shadow-lg border border-blue-200 card-hover status-indicator">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-700 mb-1">Total Employees</p>
+                        <p class="text-3xl font-bold text-blue-900">{{ total_employees }}</p>
+                        <p class="text-xs text-blue-600 mt-1">Registered users</p>
+                    </div>
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Present Today Card -->
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl shadow-lg border border-green-200 card-hover status-indicator">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-700 mb-1">Present Today</p>
+                        <p class="text-3xl font-bold text-green-900">{{ present_today }}</p>
+                        <p class="text-xs text-green-600 mt-1">Checked in</p>
+                    </div>
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Half Day Card -->
+            <div class="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-2xl shadow-lg border border-yellow-200 card-hover status-indicator">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-yellow-700 mb-1">Half Day</p>
+                        <p class="text-3xl font-bold text-yellow-900">{{ half_day }}</p>
+                        <p class="text-xs text-yellow-600 mt-1">Partial attendance</p>
+                    </div>
+                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Absent Card -->
+            <div class="bg-gradient-to-br from-red-50 to-rose-50 p-6 rounded-2xl shadow-lg border border-red-200 card-hover status-indicator">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-red-700 mb-1">Absent</p>
+                        <p class="text-3xl font-bold text-red-900">{{ absent }}</p>
+                        <p class="text-xs text-red-600 mt-1">Not checked in</p>
+                    </div>
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Approvals Section -->
+        {% if pending_approvals %}
+        <div class="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden">
+            <div class="bg-gradient-to-r from-yellow-500 to-amber-500 p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-hourglass-half text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Pending Approvals</h2>
+                        <p class="text-yellow-100">Review attendance requests from employees outside site range</p>
+                    </div>
+                    <div class="ml-auto">
+                        <span class="bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            {{ pending_approvals|length }} pending
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="space-y-6">
+                    {% for approval in pending_approvals %}
+                    <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-6 card-hover">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                            <div class="flex-1 mb-4 lg:mb-0">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-user text-yellow-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900">{{ approval.employee.name }}</h3>
+                                        <p class="text-sm text-gray-600">ID: {{ approval.employee.employee_id }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div class="bg-white bg-opacity-50 p-3 rounded-lg">
+                                        <p class="text-xs font-medium text-gray-600 mb-1">Attendance Type</p>
+                                        <p class="text-sm font-semibold text-gray-900">{{ approval.attendance_type.title() }}</p>
+                                    </div>
+                                    <div class="bg-white bg-opacity-50 p-3 rounded-lg">
+                                        <p class="text-xs font-medium text-gray-600 mb-1">Date & Time</p>
+                                        <p class="text-sm font-semibold text-gray-900">
+                                            {{ approval.date.strftime('%d-%m-%Y') }} at {{ approval.time.strftime('%I:%M %p') }}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white bg-opacity-50 p-3 rounded-lg mb-4">
+                                    <p class="text-xs font-medium text-gray-600 mb-1">Location</p>
+                                    <p class="text-sm text-gray-900">{{ approval.address[:100] }}{% if approval.address|length > 100 %}...{% endif %}</p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Coordinates: {{ "%.6f"|format(approval.latitude) }}, {{ "%.6f"|format(approval.longitude) }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col sm:flex-row lg:flex-col space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-0 lg:space-y-2">
+                                <a href="https://maps.google.com/?q={{ approval.latitude }},{{ approval.longitude }}" 
+                                   target="_blank" 
+                                   class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    View on Map
+                                </a>
+                                
+                                <form method="POST" action="{{ url_for('admin.approve_attendance', approval_id=approval.id) }}" class="inline">
+                                    <input type="hidden" name="remarks" value="Approved by admin">
+                                    <button type="submit" 
+                                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium">
+                                        <i class="fas fa-check mr-2"></i>
+                                        Approve
+                                    </button>
+                                </form>
+                                
+                                <form method="POST" action="{{ url_for('admin.reject_attendance', approval_id=approval.id) }}" class="inline">
+                                    <input type="hidden" name="remarks" value="Rejected by admin">
+                                    <button type="submit" 
+                                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm font-medium">
+                                        <i class="fas fa-times mr-2"></i>
+                                        Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Management Links -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Manage Employees Card -->
+            <a href="{{ url_for('admin.employees') }}" class="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                <div class="p-8 text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-users text-3xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Manage Employees</h3>
+                    <p class="text-gray-600 mb-4">Add, edit, and manage employee records</p>
+                    <div class="inline-flex items-center text-blue-600 font-medium group-hover:text-blue-700">
+                        <span>View Details</span>
+                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Manage Branches Card -->
+            <a href="{{ url_for('admin.branches') }}" class="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                <div class="p-8 text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-building text-3xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Manage Branches</h3>
+                    <p class="text-gray-600 mb-4">Manage branches and their sites</p>
+                    <div class="inline-flex items-center text-green-600 font-medium group-hover:text-green-700">
+                        <span>View Details</span>
+                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Attendance Reports Card -->
+            <a href="{{ url_for('admin.attendance_reports') }}" class="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                <div class="p-8 text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-purple-100 to-violet-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-chart-bar text-3xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Attendance Reports</h3>
+                    <p class="text-gray-600 mb-4">View and export attendance reports</p>
+                    <div class="inline-flex items-center text-purple-600 font-medium group-hover:text-purple-700">
+                        <span>View Details</span>
+                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                    </div>
+                </div>
+    </a>
+</div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="fixed top-4 right-4 z-50 space-y-2">
+                    {% for category, message in messages %}
+                        <div class="bg-white bg-opacity-95 text-gray-800 px-6 py-4 rounded-xl shadow-lg border-l-4 {% if category == 'success' %}border-green-500{% elif category == 'danger' or category == 'error' %}border-red-500{% elif category == 'warning' %}border-yellow-500{% else %}border-blue-500{% endif %} max-w-sm">
+                            <div class="flex items-center">
+                                <i class="fas {% if category == 'success' %}fa-check-circle text-green-500{% elif category == 'danger' or category == 'error' %}fa-exclamation-circle text-red-500{% elif category == 'warning' %}fa-exclamation-triangle text-yellow-500{% else %}fa-info-circle text-blue-500{% endif %} mr-3"></i>
+                                <div>
+                                    <p class="font-medium">{{ message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.fixed.top-4.right-4 > div');
+            messages.forEach(msg => {
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateX(100%)';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+
+        // Add interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add pulse animation to pending approvals count
+            const pendingCount = document.querySelector('.bg-white.bg-opacity-20');
+            if (pendingCount) {
+                pendingCount.classList.add('pulse-animation');
+            }
+        });
+    </script>
+</body>
+</html>

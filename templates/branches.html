@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %}Branches{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Branches</h1>
+
+<!-- Add Branch -->
+<form action="{{ url_for('admin.add_branch') }}" method="POST" class="bg-white p-6 rounded shadow mb-6">
+    <input type="text" name="name" placeholder="Branch Name" required class="border p-2 rounded w-full">
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700">Add Branch</button>
+</form>
+
+<!-- Branch Table -->
+<div class="bg-white rounded shadow p-4">
+    <table class="w-full border-collapse">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="border px-4 py-2">Name</th>
+                <th class="border px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for branch in branches %}
+            <tr>
+                <td class="border px-4 py-2">{{ branch.name }}</td>
+                <td class="border px-4 py-2 space-x-2">
+                    <form action="{{ url_for('admin.edit_branch', id=branch.id) }}" method="POST" class="inline-block">
+                        <button type="submit" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Edit</button>
+                    </form>
+                    <form action="{{ url_for('admin.delete_branch', id=branch.id) }}" method="POST" class="inline-block">
+                        <button type="submit" class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">Delete</button>
+                    </form>
+                    <a href="{{ url_for('admin.sites', branch_id=branch.id) }}" class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">Sites</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

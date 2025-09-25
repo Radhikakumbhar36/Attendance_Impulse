@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .navbar {
+      background-color: #343a40;
+    }
+    .navbar-brand, .nav-link {
+      color: #fff !important;
+    }
+    .card {
+      border-radius: 12px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+    }
+    .table th, .table td {
+      vertical-align: middle;
+    }
+    .attendance-status {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Employee Dashboard</a>
+      <div class="ms-auto">
+        <a href="/employee/logout" class="btn btn-danger btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="row g-4">
+      <!-- Profile Section -->
+      <div class="col-md-4">
+        <div class="card p-3">
+          <h5 class="card-title">Welcome, {{ employee.name }}</h5>
+          <p><strong>Employee ID:</strong> {{ employee.employee_id }}</p>
+          <p><strong>Email:</strong> {{ employee.email }}</p>
+          <p><strong>Branch:</strong> {{ employee.branch.name if employee.branch else 'No Branch Assigned' }}</p>
+        </div>
+      </div>
+
+      <!-- Attendance Section -->
+      <div class="col-md-8">
+        <div class="card p-3">
+          <h5 class="card-title">Today's Attendance</h5>
+          {% if attendance %}
+            <p class="attendance-status text-success">✅ Present</p>
+            <p><strong>Check-in Time:</strong> {{ attendance.check_in }}</p>
+            {% if attendance.check_out %}
+              <p><strong>Check-out Time:</strong> {{ attendance.check_out }}</p>
+            {% else %}
+              <a href="/employee/checkout" class="btn btn-warning btn-sm">Check-out</a>
+            {% endif %}
+          {% else %}
+            <p class="attendance-status text-danger">❌ Not Marked</p>
+            <a href="/employee/checkin" class="btn btn-success btn-sm">Check-in</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-3">
+      <!-- Leave Request Section -->
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5 class="card-title">Request Leave</h5>
+          <form action="/employee/request_leave" method="POST">
+            <div class="mb-3">
+              <label for="leave_date" class="form-label">Leave Date</label>
+              <input type="date" id="leave_date" name="leave_date" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="reason" class="form-label">Reason</label>
+              <textarea id="reason" name="reason" class="form-control" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Attendance History -->
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5 class="card-title">Attendance History</h5>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in attendance_history %}
+                <tr>
+                  <td>{{ record.date }}</td>
+                  <td>{{ record.check_in or '-' }}</td>
+                  <td>{{ record.check_out or '-' }}</td>
+                  <td>
+                    {% if record.check_in %}
+                      <span class="badge bg-success">Present</span>
+                    {% else %}
+                      <span class="badge bg-danger">Absent</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
