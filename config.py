@@ -6,7 +6,7 @@ load_dotenv()
 # Database Config
 SQLALCHEMY_DATABASE_URI = os.environ.get(
     "DATABASE_URL",
-    "postgresql://postgres:yourpassword@localhost/attendance"
+    "postgresql://postgres:Radhakumbhar%4016@gogblrvfvcivcxghqgyn.supabase.co:5432/postgres?sslmode=require"
 )
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
